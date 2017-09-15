@@ -1,4 +1,4 @@
-# imooc-mall
+# dumall
 
 > A Vue.js project
 
