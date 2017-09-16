@@ -140,6 +140,7 @@
             },
             sortGoods(){
                 this.sortFlag = !this.sortFlag;
+                this.page=1;
                 this.getGoodsList();
             },
             loadMore(){
