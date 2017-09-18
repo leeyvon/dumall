@@ -18,7 +18,7 @@
               <dl class="filter-price">
                 <dt>Price:</dt>
                 <dd>
-                  <a :class="{cur:priceChecked=='all'}" href="javascript:void(0)" @click="priceChecked='all'">All</a>
+                  <a :class="{cur:priceChecked=='all'}" href="javascript:void(0)" @click="setPriceFilter('all')">All</a>
                 </dd>
                 <dd v-for="(price,index) in priceFilter">
                   <a :class="{cur:priceChecked==index}" href="javascript:void(0)" @click="setPriceFilter(index)">{{price.startPrice}} - {{price.endPrice}}</a>
@@ -38,7 +38,7 @@
                       <div class="name">{{item.productName}}</div>
                       <div class="price">{{item.salePrice}}</div>
                       <div class="btn-area">
-                        <a href="javascript:;" class="btn btn--m">加入购物车</a>
+                        <a href="javascript:;" class="btn btn--m" @click="addCart(item.productId)">加入购物车</a>
                       </div>
                     </div>
                   </li>
@@ -79,7 +79,7 @@
                 },
                 {
                   startPrice:1000,
-                  endPrice:2000
+                  endPrice:5000
                 }
               ],
               priceChecked:'all',
@@ -96,6 +96,7 @@
             this.getGoodsList();
         },
         methods:{
+            // 加载商品
             getGoodsList(flag){
               var param = {
                 page:this.page,
@@ -130,25 +131,40 @@
               this.filterBy = true;
               this.overLayFlag = true;
             },
+            // 按价格区间筛选商品
             setPriceFilter(index){
                this.priceChecked=index;
+               this.page = 1;
+               this.getGoodsList();
                this.closePop();
             },
             closePop(){
               this.filterBy = false;
               this.overLayFlag = false;
             },
+            // 商品排序
             sortGoods(){
                 this.sortFlag = !this.sortFlag;
                 this.page=1;
                 this.getGoodsList();
             },
+            // 加载更多
             loadMore(){
                 this.busy = true
                 setTimeout(() => {
                   this.page++;
                   this.getGoodsList(true);
                 }, 500)
+            },
+            // 添加到购物车
+            addCart(productId){
+                axios.post('/goods/addCart',{
+                    productId:productId
+                }).then((res)=>{
+                    if(res.data.status == '0'){
+                        alert('添加购物车成功');
+                    }
+                });
             }
         },
         components:{
