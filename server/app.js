@@ -23,6 +23,24 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 登陆拦截
+app.use((req,res,next)=>{
+    if(req.cookies.userId){
+        next();
+    }else{
+        if(req.path === '/users/login' || req.path === '/goods/list'){
+            next();
+        }else{
+            res.json({
+                status:'10001',
+                msg:'当前未登录',
+                result:''
+            })
+        }
+    }
+})
+
+
 app.use('/', index);
 app.use('/users', users);
 app.use('/goods',goods);

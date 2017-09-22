@@ -179,4 +179,7 @@
     @import './../assets/css/base.css';
     @import './../assets/css/product.css';
     @import './../assets/css/login.css';
+    .icon-arrow-short{
+        transition: all .2s ease-out;
+    }
 </style>
