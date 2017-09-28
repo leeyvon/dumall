@@ -73,5 +73,56 @@ router.post('/logout',(req,res,next)=>{
         result:''
     })
 })
+// 查询当前用户购物车
+router.get('/cartList',(req,res,next)=>{
+    let userId = req.cookies.userId;
+    User.findOne({
+        userId:userId
+    },(err,doc)=>{
+        if(err){
+            res.json({
+                status: '1',
+                msg: err.message,
+                result: ''
+            })
+        }else {
+            if(doc){
+                res.json({
+                    status: '0',
+                    msg: '',
+                    result: doc.cartList
+                })
+            }
+        }
+    })
+})
+// 修改购物车某个商品状态
+router.post('/cartEdit',(req,res,next)=>{
+    let userId = req.cookies.userId;
+    let productId = req.body.productId;
+    let productNum = req.body.productNum;
+    let checked = req.body.checked;
+    User.update({
+        'userId':userId,
+        'cartList.productId':productId
+    },{
+        'cartList.$.productNum':productNum,
+        'cartList.$.checked':checked
+    },(err,doc)=>{
+        if(err){
+            res.json({
+              status: '1',
+              msg: err.message,
+              result: ''
+            })
+        }else {
+            res.json({
+              status: '0',
+              msg: '',
+              result: 'success'
+            })
+        }
+    })
+})
 
 module.exports = router;

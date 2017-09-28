@@ -61,38 +61,38 @@
                   </ul>
                 </div>
                 <ul class="cart-item-list">
-                  <li>
+                  <li v-for="item in cartList">
                     <div class="cart-tab-1">
                       <div class="cart-item-check">
-                        <a href="javascript:void(0)" class="checkbox-btn item-check-btn">
+                        <a :class="{'check':item.checked === '1'}" @click="editCart('checked',item)" href="javascript:void(0)" class="checkbox-btn item-check-btn">
                           <svg class="icon icon-ok">
                             <use xlink:href="#icon-ok"></use>
                           </svg>
                         </a>
                       </div>
                       <div class="cart-item-pic">
-                        <img>
+                        <img :src="'/static/'+item.productImage" :alt="item.productName">
                       </div>
                       <div class="cart-item-title">
-                        <div class="item-name"></div>
+                        <div class="item-name">{{item.productName}}</div>
                       </div>
                     </div>
                     <div class="cart-tab-2">
-                      <div class="item-price"></div>
+                      <div class="item-price">{{item.salePrice}}</div>
                     </div>
                     <div class="cart-tab-3">
                       <div class="item-quantity">
                         <div class="select-self select-self-open">
                           <div class="select-self-area">
-                            <a  class="input-sub">-</a>
-                            <span class="select-ipt"></span>
-                            <a  class="input-add">+</a>
+                            <a  class="input-sub" @click="editCart('minus',item)">-</a>
+                            <span class="select-ipt">{{item.productNum}}</span>
+                            <a  class="input-add" @click="editCart('add',item)">+</a>
                           </div>
                         </div>
                       </div>
                     </div>
                     <div class="cart-tab-4">
-                      <div class="item-price-total"></div>
+                      <div class="item-price-total">{{item.productNum * item.salePrice}}</div>
                     </div>
                     <div class="cart-tab-5">
                       <div class="cart-item-opration">
@@ -111,8 +111,8 @@
               <div class="cart-foot-inner">
                 <div class="cart-foot-l">
                   <div class="item-all-check">
-                    <a  href="javascript:void(0)">
-                      <span class="checkbox-btn item-check-btn">
+                    <a @click="toggleCheckAll" href="javascript:void(0)">
+                      <span :class="{'check':checkFlagAll}" class="checkbox-btn item-check-btn">
                           <svg class="icon icon-ok"><use xlink:href="#icon-ok"/></svg>
                       </span>
                       <span>Select all</span>
@@ -121,7 +121,7 @@
                 </div>
                 <div class="cart-foot-r">
                   <div class="item-total">
-                    Item total: <span class="total-price"></span>
+                    Item total: <span class="total-price">{{totalPrice}}</span>
                   </div>
                   <div class="btn-wrap">
                     <a class="btn btn--red">Checkout</a>
@@ -153,11 +153,73 @@
     export default{
         data(){
             return {
-
+                cartList:[]
             }
         },
+        computed:{
+            // 全选与全不选
+            checkFlagAll(){
+                return this.checkedCount === this.cartList.length;
+            },
+            // 已选商品数量
+            checkedCount(){
+                let i = 0;
+                this.cartList.forEach((item)=>{
+                    if(item.checked === '1'){
+                        i++;
+                    }
+                })
+                return i;
+            },
+            // 计算购买商品总金额
+            totalPrice(){
+                let price = 0;
+                this.cartList.forEach((item)=>{
+                    if(item.checked === '1'){
+                        price += parseFloat(item.salePrice) * parseInt(item.productNum);
+                    }
+                })
+                return price;
+            }
+        },
+        mounted(){
+            this.init();
+        },
         methods:{
-
+            init(){
+                axios.get('/users/cartList').then((response)=>{
+                    let res = response.data;
+                    this.cartList = res.result;
+                })
+            },
+            editCart(flag,item){
+                if(flag === 'add'){
+                    item.productNum ++;
+                }else if(flag === 'minus'){
+                    if(item.productNum <= 1){
+                        return
+                    }
+                    item.productNum --;
+                }else{
+                    item.checked = item.checked === '1'?'0':'1';
+                }
+                axios.post('/users/cartEdit',{
+                    productId:item.productId,
+                    productNum:item.productNum,
+                    checked:item.checked
+                }).then((response)=>{
+                    let res = response.data;
+                    if(res.status === '0'){
+                        console.log('success');
+                    }
+                })
+            },
+            toggleCheckAll(){
+                let flag = !this.checkFlagAll;
+                this.cartList.forEach((item)=>{
+                    item.checked = flag ? '1' :'0';
+                })
+            }
         },
         components:{
             NavHeader,
@@ -170,6 +232,7 @@
 
 <style lang="scss">
     @import './../assets/css/checkout.css';
+    @import "./../assets/css/base.css";
     .input-sub, .input-add {
     min-width: 40px;
     height: 100%;
