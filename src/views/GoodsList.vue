@@ -52,6 +52,28 @@
         </div>
       </div>
       <div class="md-overlay" v-show="overLayFlag" @click="closePop"></div>
+      <!-- 购物车模态框 -->
+      <modal :mdShow="mdShow" @close="closeModal">
+          <p slot="message">
+              请先登录，否则无法加入到购物车中！
+          </p>
+          <div slot="btnGroup">
+              <a href="javascript:void(0);" @click="mdShow = false" class="btn btn--m">关闭</a>
+          </div>
+      </modal>
+
+      <modal :mdShow="mdShowCart" @close="closeModal">
+          <p slot="message">
+              <svg class="icon-status-ok">
+                  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-status-ok"></use>
+              </svg>
+              <span>加入购物车成功</span>
+          </p>
+          <div slot="btnGroup">
+              <a @click="mdShowCart = false" href="javascript:void(0)" class="btn btn--m">继续购物</a>
+              <a href="javascript:void(0);" @click="mdShowCart = false" class="btn btn--m">关闭</a>
+          </div>
+      </modal>
       <nav-footer></nav-footer>
     </div>
 </template>
@@ -59,6 +81,7 @@
     import NavHeader from '@/components/Header';
     import NavFooter from '@/components/Footer';
     import NavBread from '@/components/NavBread';
+    import Modal from '@/components/Modal';
     import axios from 'axios';
     export default{
         data(){
@@ -89,7 +112,9 @@
               page:1,
               pageSize:8,
               busy:true,
-              loading:false
+              loading:false,
+              mdShow:false,
+              mdShowCart:false
             }
         },
         mounted(){
@@ -161,16 +186,24 @@
                 axios.post('/goods/addCart',{
                     productId:productId
                 }).then((res)=>{
+                    if(res.data.status === '10001'){
+                        this.mdShow = true;
+                    }
                     if(res.data.status == '0'){
-                        alert('添加购物车成功');
+                        this.mdShowCart = true;
                     }
                 });
+            },
+            closeModal(){
+                this.mdShow = false;
+                this.mdShowCart = false;
             }
         },
         components:{
             NavHeader,
             NavFooter,
-            NavBread
+            NavBread,
+            Modal
         }
     }
 </script>
