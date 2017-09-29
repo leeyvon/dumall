@@ -78,7 +78,7 @@
                       </div>
                     </div>
                     <div class="cart-tab-2">
-                      <div class="item-price">{{item.salePrice}}</div>
+                      <div class="item-price">{{item.salePrice | currency('$')}}</div>
                     </div>
                     <div class="cart-tab-3">
                       <div class="item-quantity">
@@ -92,11 +92,11 @@
                       </div>
                     </div>
                     <div class="cart-tab-4">
-                      <div class="item-price-total">{{item.productNum * item.salePrice}}</div>
+                      <div class="item-price-total">{{(item.productNum * item.salePrice) | currency('$')}}</div>
                     </div>
                     <div class="cart-tab-5">
                       <div class="cart-item-opration">
-                        <a  href="javascript:;" class="item-edit-btn">
+                        <a @click="delCartConfirm(item)" href="javascript:;" class="item-edit-btn">
                           <svg class="icon icon-del">
                             <use xlink:href="#icon-del"></use>
                           </svg>
@@ -121,10 +121,10 @@
                 </div>
                 <div class="cart-foot-r">
                   <div class="item-total">
-                    Item total: <span class="total-price">{{totalPrice}}</span>
+                    Item total: <span class="total-price">{{totalPrice | currency('$')}}</span>
                   </div>
                   <div class="btn-wrap">
-                    <a class="btn btn--red">Checkout</a>
+                    <a @click="checkOut" class="btn btn--red" :class="{'btn--dis':checkedCount === 0}">Checkout</a>
                   </div>
                 </div>
               </div>
@@ -132,13 +132,13 @@
           </div>
         </div>
 
-        <!-- <modal :mdShow="modalConfirm" @close="closeModal">
+        <modal :mdShow="modalConfirm" @close="closeModal">
           <p slot="message">你确认要删除此条数据吗?</p>
           <div slot="btnGroup">
             <a @click="delCart" href="javascript:void(0)" class="btn btn--m">确认</a>
             <a @click="modalConfirm = false" href="javascript:void(0)" class="btn btn--m">关闭</a>
           </div>
-        </modal> -->
+        </modal>
 
         <nav-footer></nav-footer>
     </div>
@@ -153,7 +153,9 @@
     export default{
         data(){
             return {
-                cartList:[]
+                cartList:[],
+                delItem:{},
+                modalConfirm:false
             }
         },
         computed:{
@@ -218,7 +220,42 @@
                 let flag = !this.checkFlagAll;
                 this.cartList.forEach((item)=>{
                     item.checked = flag ? '1' :'0';
+                });
+                axios.post('/users/editCheckAll',{
+                    checkAll:flag
+                }).then((response)=>{
+                    let res = response.data;
+                    if(res.status === '0'){
+                        console.log(res.message);
+                    }
                 })
+            },
+            // 删除商品确认
+            delCartConfirm(item){
+                this.delItem = item;
+                this.modalConfirm = true;
+            },
+            delCart(){
+                axios.post('/users/cartDel',{
+                    productId:this.delItem.productId
+                }).then((response)=>{
+                    let res = response.data;
+                    if(res.status === '0'){
+                        this.modalConfirm = false;
+                        this.init();
+                    }
+                })
+            },
+            closeModal(){
+                this.modalConfirm = false;
+            },
+            // address跳转
+            checkOut(){
+                if(this.checkedCount > 0){
+                    this.$router.push({
+                        path:'/address'
+                    })
+                }
             }
         },
         components:{

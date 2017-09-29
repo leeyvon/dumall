@@ -124,5 +124,167 @@ router.post('/cartEdit',(req,res,next)=>{
         }
     })
 })
-
+// 购物车删除
+router.post('/cartDel',(req,res,next)=>{
+    let userId = req.cookies.userId;
+    let productId = req.body.productId;
+    User.update({
+        userId:userId
+    },{
+        $pull:{
+            'cartList':{
+                'productId':productId
+            }
+        }
+    },(err,doc)=>{
+        if(err){
+            res.json({
+              status: '1',
+              msg: err.message,
+              result: ''
+            })
+        }else {
+            res.json({
+              status: '0',
+              msg: '',
+              result: 'success'
+            })
+        }
+    })
+});
+// 购物车全选与全部不选
+router.post('/editCheckAll',(req,res,next)=>{
+    let userId = req.cookies.userId;
+    let checkAll = req.body.checkAll ? '1' :'0';
+    User.findOne({
+        userId:userId
+    },(err,doc)=>{
+        if(err){
+            res.json({
+              status: '1',
+              msg: err.message,
+              result: ''
+            })
+        }else {
+            if(doc){
+                doc.cartList.forEach((item)=>{
+                    item.checked = checkAll;
+                });
+                doc.save((err1,doc1)=>{
+                    if(err){
+                        res.json({
+                          status: '1',
+                          msg: err.message,
+                          result: ''
+                        })
+                    }else {
+                        res.json({
+                          status: '0',
+                          msg: '',
+                          result: 'success'
+                        })
+                    }
+                })
+            }
+        }
+    })
+});
+// 获取用户地址
+router.get('/address',(req,res,next)=>{
+    let userId = req.cookies.userId;
+    User.findOne({
+        userId:userId
+    },(err,doc)=>{
+        if(err){
+            res.json({
+              status: '1',
+              msg: err.message,
+              result: ''
+            })
+        }else {
+            res.json({
+              status: '0',
+              msg: '',
+              result: doc.addressList
+            })
+        }
+    })
+});
+// 设置默认地址
+router.post('/setDefault',(req,res,next)=>{
+    let userId = req.cookies.userId;
+    let addressId = req.body.addressId;
+    if(!addressId){
+        res.json({
+          status: '1003',
+          msg: 'addressId is null',
+          result: ''
+        })
+        return;
+    }
+    User.findOne({
+        userId:userId
+    },(err,doc)=>{
+        if(err){
+            res.json({
+              status: '1',
+              msg: err.message,
+              result: ''
+            })
+        }else {
+            let addressList = doc.addressList;
+            addressList.forEach((item)=>{
+                if(item.addressId === addressId){
+                    console.log(item.addressId);
+                    item.isDefault = true;
+                }else{
+                    item.isDefault = false;
+                }
+            })
+            doc.save((err1,doc)=>{
+                if(err1){
+                    res.json({
+                      status: '1',
+                      msg: err.message,
+                      result: ''
+                    })
+                }else {
+                    res.json({
+                      status: '0',
+                      msg: '',
+                      result: 'success'
+                    })
+                }
+            })
+        }
+    })
+});
+// 删除地址
+router.post('/delAddress',(req,res,next)=>{
+    let userId = req.cookies.userId;
+    let addressId = req.body.addressId;
+    User.update({
+        userId:userId
+    },{
+        $pull:{
+            'addressList':{
+                'addressId':addressId
+            }
+        }
+    },(err,doc)=>{
+        if(err){
+            res.json({
+              status: '1',
+              msg: err.message,
+              result: ''
+            })
+        }else {
+            res.json({
+              status: '0',
+              msg: '',
+              result: 'success'
+            })
+        }
+    })
+})
 module.exports = router;
