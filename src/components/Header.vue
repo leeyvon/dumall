@@ -42,7 +42,7 @@
               <a href="javascript:void(0)" class="navbar-link" @click="mdShow=true" v-if="!nickName">Login</a>
               <a href="javascript:void(0)" class="navbar-link" @click="logout">Logout</a>
               <div class="navbar-cart-container">
-                <span class="navbar-cart-count"></span>
+                <span class="navbar-cart-count">{{cartCount}}</span>
                 <a class="navbar-link navbar-cart-link" href="/#/cart">
                   <svg class="navbar-cart-logo">
                     <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-cart"></use>
@@ -88,12 +88,19 @@ export default {
             userPwd:'',
             mdShow:false,
             errorTip:false,
-            errorInfo:'',
-            nickName:''
+            errorInfo:''
         }
     },
     mounted(){
         this.checkLogin();
+    },
+    computed:{
+        nickName(){
+            return this.$store.state.nickName;
+        },
+        cartCount(){
+            return this.$store.state.cartCount;
+        }
     },
     methods:{
         checkLogin(){
@@ -101,7 +108,9 @@ export default {
                 let res = response.data;
                 if(res.status === '0'){
                     this.mdShow = false;
-                    this.nickName = res.result;
+                    // this.nickName = res.result;
+                    this.$store.commit('updateUserInfo',res.result);
+                    this.getCartCount();
                 }
             })
         },
@@ -119,7 +128,9 @@ export default {
                 if(res.status === '0'){
                     if(res.login){
                         this.mdShow = false;
-                        this.nickName = res.result.userName;
+                        // this.nickName = res.result.userName;
+                        this.$store.commit('updateUserInfo',res.result.userName);
+                        this.getCartCount();
                     }else{
                         this.errorTip = true;
                         this.errorInfo = '用户名密码错误';
@@ -131,13 +142,20 @@ export default {
             axios.post('/users/logout').then((response)=>{
                 let res = response.data;
                 if(res.status === '0'){
-                    this.nickName = '';
+                    // this.nickName = '';
+                    this.$store.commit('updateUserInfo','');
                 }
             })
         },
         // 关闭模态框
         closeModal(){
             this.mdShow = false;
+        },
+        getCartCount(){
+            axios.get('/users/getCartCount').then((response)=>{
+                let res = response.data;
+                this.$store.commit('initCartCount',res.result);
+            })
         }
     },
     components:{

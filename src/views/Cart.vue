@@ -212,7 +212,13 @@
                 }).then((response)=>{
                     let res = response.data;
                     if(res.status === '0'){
-                        console.log('success');
+                        let num = 0;
+                        if( flag === 'add'){
+                            num = 1;
+                        }else if(flag === 'minus'){
+                            num = -1;
+                        }
+                        this.$store.commit('updateCartCount',num);
                     }
                 })
             },
@@ -243,6 +249,7 @@
                     if(res.status === '0'){
                         this.modalConfirm = false;
                         this.init();
+                        this.$store.commit('updateCartCount',-this.delItem.productNum)
                     }
                 })
             },
