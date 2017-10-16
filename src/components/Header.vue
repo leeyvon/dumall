@@ -42,7 +42,7 @@
               <a href="javascript:void(0)" class="navbar-link" @click="mdShow=true" v-if="!nickName">Login</a>
               <a href="javascript:void(0)" class="navbar-link" @click="logout">Logout</a>
               <div class="navbar-cart-container">
-                <span class="navbar-cart-count">{{cartCount}}</span>
+                <span class="navbar-cart-count" v-if="cartCount>0">{{cartCount}}</span>
                 <a class="navbar-link navbar-cart-link" href="/#/cart">
                   <svg class="navbar-cart-logo">
                     <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-cart"></use>
@@ -81,6 +81,7 @@
 <script>
 import Modal from '@/components/Modal';
 import axios from 'axios';
+import {mapState} from 'vuex';
 export default {
     data(){
         return {
@@ -95,12 +96,13 @@ export default {
         this.checkLogin();
     },
     computed:{
-        nickName(){
-            return this.$store.state.nickName;
-        },
-        cartCount(){
-            return this.$store.state.cartCount;
-        }
+        ...mapState(['nickName','cartCount'])
+        // nickName(){
+        //     return this.$store.state.nickName;
+        // },
+        // cartCount(){
+        //     return this.$store.state.cartCount;
+        // }
     },
     methods:{
         checkLogin(){
@@ -144,6 +146,7 @@ export default {
                 if(res.status === '0'){
                     // this.nickName = '';
                     this.$store.commit('updateUserInfo','');
+                    this.getCartCount();
                 }
             })
         },
